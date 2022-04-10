@@ -5,6 +5,8 @@ import Button from "react-bootstrap/Button";
 import {
   createUserWithEmailAndPassword,
   getAuth,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import app from "./firebase.init";
@@ -49,6 +51,7 @@ function App() {
     setError("");
 
     if (registered) {
+      console.log(email, password);
       signInWithEmailAndPassword(auth, email, password)
         .then((result) => {
           const user = result.user;
@@ -65,13 +68,28 @@ function App() {
           console.log(user);
           setEmail("");
           setPassword("");
+          verifyEmail();
         })
         .catch((error) => {
           console.error(error);
           setError(error.message);
         });
     }
+
+    const verifyEmail = () => {
+      sendEmailVerification(auth.currentUser).then(() => {
+        console.log("Email Verification Sent");
+      });
+    };
   };
+  const handlePasswordReset = () => {
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        console.log("email sent");
+      })
+      .catch();
+  };
+
   return (
     <div className="register w-50 mx-auto mt-5">
       <h2 className="text-primary">
@@ -93,7 +111,6 @@ function App() {
             Please provide a valid email.
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group className="mb-3" controlId="formBasicPassword">
           <Form.Label>Password</Form.Label>
           <Form.Control
@@ -113,8 +130,11 @@ function App() {
             label="Already Registered?"
           />
         </Form.Group>
+        <Button onClick={handlePasswordReset} variant="link">
+          Forget Password?
+        </Button>{" "}
+        <br />
         <p className="text-danger">{error}</p>
-
         <Button variant="primary" type="submit">
           {registered ? "Login" : "Register"}
         </Button>
