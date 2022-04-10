@@ -8,6 +8,7 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import app from "./firebase.init";
 import { useState } from "react";
@@ -19,7 +20,13 @@ function App() {
   const [registered, setRegistered] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+
+  //  name event
+  const handleNameBlur = (event) => {
+    setName(event.target.value);
+  };
 
   const handleEmailBlur = (event) => {
     setEmail(event.target.value);
@@ -69,12 +76,25 @@ function App() {
           setEmail("");
           setPassword("");
           verifyEmail();
+          setUserName();
         })
         .catch((error) => {
           console.error(error);
           setError(error.message);
         });
     }
+
+    const setUserName = () => {
+      updateProfile(auth.currentUser, {
+        displayName: name,
+      })
+        .then(() => {
+          console.log("updating Name");
+        })
+        .catch((error) => {
+          setError(error.message);
+        });
+    };
 
     const verifyEmail = () => {
       sendEmailVerification(auth.currentUser).then(() => {
@@ -96,6 +116,21 @@ function App() {
         Please {registered ? "Login" : "Register"}
       </h2>
       <Form noValidate validated={validated} onSubmit={handleFormSubmit}>
+        {!registered && (
+          <Form.Group className="mb-3" controlId="formBasicEmail">
+            <Form.Label>Your Name</Form.Label>
+            <Form.Control
+              onBlur={handleNameBlur}
+              type="text"
+              placeholder="Your Name"
+              required
+            />
+
+            <Form.Control.Feedback type="invalid">
+              Please provide your name.
+            </Form.Control.Feedback>
+          </Form.Group>
+        )}
         <Form.Group className="mb-3" controlId="formBasicEmail">
           <Form.Label>Email address</Form.Label>
           <Form.Control
